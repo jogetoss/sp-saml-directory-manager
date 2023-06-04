@@ -1,0 +1,115 @@
+[
+    {
+        title : 'SAML 2.0 Settings',
+        properties : [
+            {
+                name : 'entityId',
+                label : 'Entity ID',
+                type : 'label',
+                value : '%s',
+            },{
+                name : 'acsUrl',
+                label : 'ACS URL',
+                type : 'label',
+                value : '%s',
+            },{
+                name : 'certificate',
+                label : 'IDP Certificate',
+                type : 'textarea',
+                value : '',
+                rows : '7',
+                cols : '65',
+                required : 'true'
+            },{
+                name : 'metadata',
+                label : 'Metadata',
+                type : 'textarea',
+                value : '',
+                rows : '7',
+                cols : '65',
+                required : 'true'
+            },{
+                name : 'userProvisioning',
+                label : 'User Provisioning Enabled',
+                type : 'checkbox',
+                options : [{
+                    value : 'true',
+                    label : ''
+                }]
+            }
+        ]
+    },
+    {
+        title: '@@properties.samlDirectoryManager.configAttribute@@',
+        properties: [
+            {
+                name: 'attrFirstName',
+                label: '@@properties.samlDirectoryManager.attrFirstName@@',
+                type: 'textfield',
+                required: 'true',
+                value: 'firstName'
+            },
+            {
+                name: 'attrLastName',
+                label: '@@properties.samlDirectoryManager.attrLastName@@',
+                type: 'textfield',
+                required: 'true',
+                value: 'lastName'
+            },
+            {
+                name: 'attrEmail',
+                label: '@@properties.samlDirectoryManager.attrEmail@@',
+                type : 'textfield',
+                required: 'true',
+                value: 'email'
+            }
+        ]
+    },
+    {
+        title: '@@title.configure.button@@',
+        properties: [
+            {
+                name: 'buttonText',
+                label: '@@properties.button.label.text@@',
+                type: 'textfield',
+                required: 'true',
+                value: 'Login'
+            },
+            {
+                name: 'buttonIcon',
+                label: '@@properties.button.icon@@',
+                type: 'textfield',
+                description: 'Sample: fas fa-arrow-right',
+                required: 'true',
+                value: 'fas fa-arrow-right'
+            },
+            {
+                name: 'buttonTextColor',
+                label: '@@properties.button.textcolor@@',
+                type : 'color',
+                required: 'true',
+                value: 'white'
+            },
+            {
+                name: 'buttonBackgroundColor',
+                label: '@@properties.button.background@@',
+                type : 'color',
+                required: 'true',
+                value: 'blue'
+            }
+        ]
+    },
+    %s,
+    {
+        title : '@@app.edm.label.addonDirectorManager@@',
+        properties : [
+            {
+                name : 'dm1',
+                label : '@@app.edm.label.addon@@',
+                type : 'elementselect',
+                options_ajax : '[CONTEXT_PATH]/web/json/plugin/org.joget.plugin.directory.SecureDirectoryManager/service',
+                url : '[CONTEXT_PATH]/web/property/json/getPropertyOptions'
+            }%s
+        ]
+    }
+]
