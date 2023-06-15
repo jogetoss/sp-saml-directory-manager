@@ -7,6 +7,7 @@ This plugin provides **Service Provider initiated SSO.**
 
 To setup and configure this plugin, please see the documentation at https://github.com/jogetoss/sp-saml-directory-manager
 
+
 Note: When building the plugin, if you encounter the error below:
 
     The POM for org.joget:wflow-enterprise-plugins:jar:7.0-SNAPSHOT is missing, no dependency information available
