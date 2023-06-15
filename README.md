@@ -3,8 +3,9 @@
 SAML is an XML-based, open-standard data format for exchanging authentication and authorization data between parties, in particular, between an identity provider and a service provider.
 Supported by many vendors and services, it is a popular method for single sign-on (SSO) between systems. 
 
-This plugin provides Service Provider initiated SSO. 
+This plugin provides **Service Provider initiated SSO.** 
 
+To setup and configure this plugin, please see the documentation at https://github.com/jogetoss/sp-saml-directory-manager
 
 Note: When building the plugin, if you encounter the error below:
 
