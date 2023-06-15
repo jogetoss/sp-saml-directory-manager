@@ -5,7 +5,7 @@ Supported by many vendors and services, it is a popular method for single sign-o
 
 This plugin provides **Service Provider initiated SSO.** 
 
-To setup and configure this plugin, please see the documentation at https://github.com/jogetoss/sp-saml-directory-manager
+To setup and configure this plugin, please see the documentation at https://dev.joget.org/community/display/marketplace/SP+Initiated+SAML
 
 
 Note: When building the plugin, if you encounter the error below:
