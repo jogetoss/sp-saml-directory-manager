@@ -1,10 +1,10 @@
 [
     {
-        title : 'SAML 2.0 Settings',
+        title : '@@org.joget.marketplace.sp.dm.config@@',
         properties : [
             {
                 name : 'entityId',
-                label : 'Entity ID',
+                label : '@@org.joget.marketplace.sp.dm.entityId@@',
                 type : 'label',
                 value : '%s',
             },{
@@ -14,7 +14,7 @@
                 value : '%s',
             },{
                 name : 'certificate',
-                label : 'IDP Certificate',
+                label : '@@org.joget.marketplace.sp.dm.certificate@@',
                 type : 'textarea',
                 value : '',
                 rows : '7',
@@ -22,7 +22,7 @@
                 required : 'true'
             },{
                 name : 'metadata',
-                label : 'Metadata',
+                label : '@@org.joget.marketplace.sp.dm.metadata@@',
                 type : 'textarea',
                 value : '',
                 rows : '7',
@@ -30,7 +30,7 @@
                 required : 'true'
             },{
                 name : 'userProvisioning',
-                label : 'User Provisioning Enabled',
+                label : '@@org.joget.marketplace.sp.dm.userProvisioning@@',
                 type : 'checkbox',
                 options : [{
                     value : 'true',
@@ -40,25 +40,25 @@
         ]
     },
     {
-        title: '@@properties.samlDirectoryManager.configAttribute@@',
+        title: '@@org.joget.marketplace.sp.dm.configAttribute@@',
         properties: [
             {
                 name: 'attrFirstName',
-                label: '@@properties.samlDirectoryManager.attrFirstName@@',
+                label: '@@org.joget.marketplace.sp.dm.attrFirstName@@',
                 type: 'textfield',
                 required: 'true',
                 value: 'firstName'
             },
             {
                 name: 'attrLastName',
-                label: '@@properties.samlDirectoryManager.attrLastName@@',
+                label: '@@org.joget.marketplace.sp.dm.attrLastName@@',
                 type: 'textfield',
                 required: 'true',
                 value: 'lastName'
             },
             {
                 name: 'attrEmail',
-                label: '@@properties.samlDirectoryManager.attrEmail@@',
+                label: '@@org.joget.marketplace.sp.dm.attrEmail@@',
                 type : 'textfield',
                 required: 'true',
                 value: 'email'
@@ -66,33 +66,33 @@
         ]
     },
     {
-        title: '@@title.configure.button@@',
+        title: '@@org.joget.marketplace.sp.dm.button@@',
         properties: [
             {
                 name: 'buttonText',
-                label: '@@properties.button.label.text@@',
+                label: '@@org.joget.marketplace.sp.dm.text@@',
                 type: 'textfield',
                 required: 'true',
                 value: 'Login'
             },
             {
                 name: 'buttonIcon',
-                label: '@@properties.button.icon@@',
+                label: '@@org.joget.marketplace.sp.dm.icon@@',
                 type: 'textfield',
-                description: 'Sample: fas fa-arrow-right',
+                description: '@@org.joget.marketplace.sp.dm.icon.desc@@',
                 required: 'true',
                 value: 'fas fa-arrow-right'
             },
             {
                 name: 'buttonTextColor',
-                label: '@@properties.button.textcolor@@',
+                label: '@@org.joget.marketplace.sp.dm.textcolor@@',
                 type : 'color',
                 required: 'true',
                 value: 'white'
             },
             {
                 name: 'buttonBackgroundColor',
-                label: '@@properties.button.background@@',
+                label: '@@org.joget.marketplace.sp.dm.background@@',
                 type : 'color',
                 required: 'true',
                 value: 'blue'
