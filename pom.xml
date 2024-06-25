@@ -141,7 +141,7 @@
         <dependency>
             <groupId>com.lastpass</groupId>
             <artifactId>saml-sdk-java</artifactId>
-            <version>4.0.0</version>
+            <version>1.0</version>
         </dependency>
         
         <!-- https://mvnrepository.com/artifact/xml-security/xmlsec -->
