@@ -297,7 +297,7 @@ public class SpSamlDirectoryManager extends SecureDirectoryManager {
         String spMetaData = "<md:EntityDescriptor xmlns:md=\"urn:oasis:names:tc:SAML:2.0:metadata\"\n"
                 + "    xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\"\n"
                 + "    entityID=\"" + entityId + "\">\n"
-                + "    <md:SPSSODescriptor AuthnRequestsSigned=\"false\" WantAssertionsSigned=\"false\"\n"
+                + "    <md:SPSSODescriptor\n"
                 + "        protocolSupportEnumeration=\"urn:oasis:names:tc:SAML:2.0:protocol\">\n"
                 + "        <md:NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:emailAddress</md:NameIDFormat>\n"
                 + "        <md:AssertionConsumerService index=\"1\" isDefault=\"true\"\n"
