@@ -56,17 +56,17 @@ public class SpSamlDirectoryManager extends SecureDirectoryManager {
 
     @Override
     public String getName() {
-        return "SAML Service Provider Directory Manager";
+        return "SAML Service Provider Directory Manager - Hotfix";
     }
 
     @Override
     public String getDescription() {
-        return "Directory Manager with support for SAML 2.0";
+        return "Directory Manager with support for SAML 2.0 - Hotfix for NUS";
     }
 
     @Override
     public String getVersion() {
-        return "8.0.2";
+        return "8.0.2h";
     }
 
     @Override
@@ -104,6 +104,7 @@ public class SpSamlDirectoryManager extends SecureDirectoryManager {
     }
 
     void doLogin(HttpServletRequest request, HttpServletResponse response) throws IOException {
+
         try {
             String login = request.getParameter("login");
             if ("1".equals(login)) {
@@ -169,6 +170,7 @@ public class SpSamlDirectoryManager extends SecureDirectoryManager {
                     try {
                         aset = client.validateResponse(authresponse);
 
+                        LogUtil.info("Assertion validation", "Skipping assertion validation...");
                         String username = aset.getNameId();
                         Map<String, List<String>> attributes = aset.getAttributes();
 
@@ -190,6 +192,7 @@ public class SpSamlDirectoryManager extends SecureDirectoryManager {
                         if (checkAllStringsNotNull(firstName, email)) {
                             // process the attributes
                             User user = dmImpl.getUserByUsername(username);
+
                             if (user == null && userProvisioningEnabled) {
                                 user = new User();
                                 user.setId(username);
@@ -294,7 +297,7 @@ public class SpSamlDirectoryManager extends SecureDirectoryManager {
         String spMetaData = "<md:EntityDescriptor xmlns:md=\"urn:oasis:names:tc:SAML:2.0:metadata\"\n"
                 + "    xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\"\n"
                 + "    entityID=\"" + entityId + "\">\n"
-                + "    <md:SPSSODescriptor\n"
+                + "    <md:SPSSODescriptor AuthnRequestsSigned=\"false\" WantAssertionsSigned=\"false\"\n"
                 + "        protocolSupportEnumeration=\"urn:oasis:names:tc:SAML:2.0:protocol\">\n"
                 + "        <md:NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:emailAddress</md:NameIDFormat>\n"
                 + "        <md:AssertionConsumerService index=\"1\" isDefault=\"true\"\n"
