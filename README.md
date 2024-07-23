@@ -5,19 +5,33 @@ Supported by many vendors and services, it is a popular method for single sign-o
 
 This plugin provides **Service Provider initiated SSO.** 
 
-To setup and configure this plugin, please see the documentation at https://dev.joget.org/community/display/marketplace/Service+Provider+%28SP%29+Initiated+SAML+Directory+Manager
+To setup and configure this plugin, please see the documentation at [documentation](https://dev.joget.org/community/display/marketplace/Service+Provider+%28SP%29+Initiated+SAML+Directory+Manager)
 
 
-Note: When building the plugin, if you encounter the error below:
+Note: When building the plugin, if you encounter the errors below:
 
-    The POM for org.joget:wflow-enterprise-plugins:jar:7.0-SNAPSHOT is missing, no dependency information available
+* LastPass dependency error
+  * Error
 
-    Failed to execute goal on project record-locking-form-element: Could not resolve dependencies for project org.joget.marketplace:sp-saml-directory-manager-8.0.0: Could not find artifact org.joget:wflow-enterprise-plugins:jar:8.0-SNAPSHOT -> [Help 1]
+    ```Failed to execute goal on project sp-saml-directory-manager: Could not resolve dependencies for project org.joget.marketplace:sp-saml-directory-manager:bundle:8.0.3: Could not find artifact com.lastpass:saml-sdk-java:jar:4.0.0 in osgeo (https://repo.osgeo.org/repository/release/)```
 
-To obtain this jar, you will need to find it in the extracted jw.war folder. You can also find it in your joget installation /jw/WEB-INF/lib directory. Please run the following command to install the dependencies.
+  * Solution
 
-    mvn install:install-file -Dfile=jw-enterprise-plugins-8.0-SNAPSHOT.jar -DgroupId=org.joget -DartifactId=wflow-enterprise-plugins -Dversion=8.0-SNAPSHOT -Dpackaging=jar -DgeneratePom=true
-*Take note of the version (jw-enterprise-plugins-8.0-SNAPSHOT.jar), and make sure you change it to your respective version.
+    ```mvn install:install-file -Dfile=libs/saml-sdk-java-4.0.0.jar -DgroupId=com.lastpass -DartifactId=saml-sdk-java -Dversion=4.0.0 -Dpackaging=jar```
+
+* Joget Enterprise dependency error
+  * Error
+
+    ```The POM for org.joget:wflow-enterprise-plugins:jar:7.0-SNAPSHOT is missing, no dependency information available. Failed to execute goal on project record-locking-form-element: Could not resolve dependencies for project org.joget.marketplace:sp-saml-directory-manager-8.0.0: Could not find artifact org.joget:wflow-enterprise-plugins:jar:8.0-SNAPSHOT -> [Help 1]```
+
+  * Solution
+
+    To obtain this jar, you will need to find it in the extracted jw.war folder. You can also find it in your joget installation /jw/WEB-INF/lib directory. Please run the following command to install the dependencies.
+
+    ```mvn install:install-file -Dfile=jw-enterprise-plugins-8.0-SNAPSHOT.jar -DgroupId=org.joget -DartifactId=wflow-enterprise-plugins -Dversion=8.0-SNAPSHOT -Dpackaging=jar -DgeneratePom=true```
+    
+    *Take note of the version (jw-enterprise-plugins-8.0-SNAPSHOT.jar), and make sure you change it to your respective version.
+
 
 # Getting Help
 
