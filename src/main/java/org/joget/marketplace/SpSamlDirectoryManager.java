@@ -49,6 +49,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.savedrequest.SavedRequest;
 
 public class SpSamlDirectoryManager extends SecureDirectoryManager {
 
@@ -66,7 +68,7 @@ public class SpSamlDirectoryManager extends SecureDirectoryManager {
 
     @Override
     public String getVersion() {
-        return "8.0.2";
+        return "8.0.3";
     }
 
     @Override
@@ -243,12 +245,20 @@ public class SpSamlDirectoryManager extends SecureDirectoryManager {
                             WorkflowHelper workflowHelper = (WorkflowHelper) AppUtil.getApplicationContext().getBean("workflowHelper");
                             workflowHelper.addAuditTrail(this.getClass().getName(), "authenticate", "Authentication for user " + username + ": " + true);
 
+
                             // redirect
                             String relayState = request.getParameter("RelayState");
                             if (relayState != null && !relayState.isEmpty()) {
                                 response.sendRedirect(relayState);
                             } else {
-                                response.sendRedirect(request.getContextPath());
+                                SavedRequest savedRequest = new HttpSessionRequestCache().getRequest(request, response);
+                                String savedUrl = "";
+                                if (savedRequest != null) {
+                                    savedUrl = savedRequest.getRedirectUrl();
+                                } else {
+                                    savedUrl = request.getContextPath();
+                                }
+                                response.sendRedirect(savedUrl);
                             }
                         } else {
                             LogUtil.info(getClassName(), "Check the arributes values" + attrEmail + "/" + attrFirstName + "/" + attrLastName);
