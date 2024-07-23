@@ -4,7 +4,7 @@
     <groupId>org.joget.marketplace</groupId>
     <artifactId>sp-saml-directory-manager</artifactId>
     <packaging>bundle</packaging>
-    <version>8.0.2</version>
+    <version>8.0.3</version>
     <name>sp-saml-directory-manager</name>
     <url>http://www.joget.org</url>
     <build>
@@ -141,7 +141,18 @@
         <dependency>
             <groupId>com.lastpass</groupId>
             <artifactId>saml-sdk-java</artifactId>
-            <version>1.0</version>
+            <version>4.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.68</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+            <version>1.68</version>
         </dependency>
         
         <!-- https://mvnrepository.com/artifact/xml-security/xmlsec -->

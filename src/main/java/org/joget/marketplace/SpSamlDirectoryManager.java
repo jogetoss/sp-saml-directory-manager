@@ -68,7 +68,7 @@ public class SpSamlDirectoryManager extends SecureDirectoryManager {
 
     @Override
     public String getVersion() {
-        return "8.0.3-SNAPSHOT";
+        return "8.0.3";
     }
 
     @Override
