@@ -18,12 +18,12 @@ public class ExtUserSecurityImpl extends UserSecurityImpl implements HiddenPlugi
     
     @Override
     public String getName() {
-        return "OpenID Connect User Security";
+        return "SAML Service Provider User Security";
     }
 
     @Override
     public String getDescription() {
-        return "User Security for OpenID Connect";
+        return "User Security for SAML Service Provider";
     }
 
     @Override
@@ -33,7 +33,7 @@ public class ExtUserSecurityImpl extends UserSecurityImpl implements HiddenPlugi
     
     @Override
     public String getLabel() {
-        return "OpenID Connect User Security";
+        return "SAML Service Provider User Security";
     }
 
     /**
