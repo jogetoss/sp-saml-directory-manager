@@ -39,6 +39,8 @@ import org.joget.directory.model.service.DirectoryManager;
 import org.joget.directory.model.service.DirectoryManagerAuthenticator;
 import org.joget.directory.model.service.DirectoryManagerProxyImpl;
 import org.joget.directory.model.service.UserSecurityFactory;
+import org.joget.marketplace.spsaml.Certificate;
+import org.joget.marketplace.spsaml.DirectoryManagerWrapper;
 import org.joget.plugin.base.PluginManager;
 import org.joget.plugin.directory.SecureDirectoryManager;
 import org.joget.plugin.directory.SecureDirectoryManagerImpl;

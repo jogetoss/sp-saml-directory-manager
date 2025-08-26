@@ -1,4 +1,4 @@
-package org.joget.marketplace;
+package org.joget.marketplace.spsaml;
 
 public class AccountSettings {
 
