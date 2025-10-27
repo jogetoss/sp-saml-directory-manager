@@ -27,6 +27,7 @@ import java.util.Set;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.workflow.security.WorkflowUserDetails;
 import org.joget.commons.util.LogUtil;
@@ -47,6 +48,7 @@ import org.joget.workflow.util.WorkflowUtil;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
@@ -68,7 +70,7 @@ public class SpSamlDirectoryManager extends SecureDirectoryManager {
 
     @Override
     public String getVersion() {
-        return "8.0.3";
+        return "8.0.4";
     }
 
     @Override
@@ -241,10 +243,15 @@ public class SpSamlDirectoryManager extends SecureDirectoryManager {
                             result.setDetails(details);
                             SecurityContextHolder.getContext().setAuthentication(result);
 
+                            SecurityContext securityContext = SecurityContextHolder.getContext();
+                            securityContext.setAuthentication(result);
+
+                            HttpSession session = request.getSession(true);
+                            session.setAttribute("SPRING_SECURITY_CONTEXT", securityContext);
+
                             // add audit trail
                             WorkflowHelper workflowHelper = (WorkflowHelper) AppUtil.getApplicationContext().getBean("workflowHelper");
                             workflowHelper.addAuditTrail(this.getClass().getName(), "authenticate", "Authentication for user " + username + ": " + true);
-
 
                             // redirect
                             String relayState = request.getParameter("RelayState");
