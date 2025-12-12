@@ -44,6 +44,7 @@ import org.joget.plugin.base.PluginManager;
 import org.joget.plugin.directory.SecureDirectoryManager;
 import org.joget.plugin.directory.SecureDirectoryManagerImpl;
 import org.joget.workflow.model.dao.WorkflowHelper;
+import org.joget.workflow.model.service.WorkflowUserManager;
 import org.joget.workflow.util.WorkflowUtil;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -70,7 +71,7 @@ public class SpSamlDirectoryManager extends SecureDirectoryManager {
 
     @Override
     public String getVersion() {
-        return "8.0.4";
+        return "8.0.5";
     }
 
     @Override
@@ -145,6 +146,7 @@ public class SpSamlDirectoryManager extends SecureDirectoryManager {
                 SecureDirectoryManagerImpl dmImpl = (SecureDirectoryManagerImpl) dm.getDirectoryManagerImpl();
                 String certificate = dmImpl.getPropertyString("certificate");
                 boolean userProvisioningEnabled = Boolean.parseBoolean(dmImpl.getPropertyString("userProvisioning"));
+                boolean userUpdateEnabled = Boolean.parseBoolean(dmImpl.getPropertyString("userUpdateEnabled"));
 
                 String attrFirstName = dmImpl.getPropertyString("attrFirstName");
                 String attrLastName = dmImpl.getPropertyString("attrLastName");
@@ -216,6 +218,24 @@ public class SpSamlDirectoryManager extends SecureDirectoryManager {
                                 UserDao userDao = (UserDao) AppUtil.getApplicationContext().getBean("userDao");
                                 userDao.addUser(user);
 
+                            } else if (user != null && userProvisioningEnabled && userUpdateEnabled) {
+                                if (email != null && !email.isEmpty()) {
+                                    user.setEmail(email);
+                                }
+
+                                if (firstName != null && !firstName.isEmpty()) {
+                                    user.setFirstName(firstName);
+                                }
+
+                                if (lastName != null && !lastName.isEmpty()) {
+                                    user.setLastName(lastName);
+                                }
+
+                                WorkflowUserManager wum = (WorkflowUserManager) AppUtil.getApplicationContext().getBean("workflowUserManager");
+                                wum.setSystemThreadUser(true);
+
+                                UserDao userDao = (UserDao) AppUtil.getApplicationContext().getBean("userDao");
+                                userDao.updateUser(user);
                             } else if (user == null && !userProvisioningEnabled) {
                                 response.sendRedirect(request.getContextPath() + "/web/login?login_error=1");
                                 return;

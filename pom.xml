@@ -4,7 +4,7 @@
     <groupId>org.joget.marketplace</groupId>
     <artifactId>sp-saml-directory-manager</artifactId>
     <packaging>bundle</packaging>
-    <version>8.0.4</version>
+    <version>8.0.5</version>
     <name>sp-saml-directory-manager</name>
     <url>http://www.joget.org</url>
     <build>
