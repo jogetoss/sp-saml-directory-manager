@@ -1,4 +1,4 @@
-package org.joget.marketplace;
+package org.joget.marketplace.spsaml;
 
 import java.io.ByteArrayInputStream;
 import java.security.cert.CertificateException;

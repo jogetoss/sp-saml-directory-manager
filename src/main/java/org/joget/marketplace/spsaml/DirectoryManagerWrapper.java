@@ -1,4 +1,4 @@
-package org.joget.marketplace;
+package org.joget.marketplace.spsaml;
 
 import java.util.Collection;
 import org.joget.directory.model.Department;
