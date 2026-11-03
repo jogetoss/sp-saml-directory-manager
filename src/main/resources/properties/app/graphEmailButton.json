@@ -1,0 +1,17 @@
+{
+    name : 'testGraphMail',
+    label : '@@org.joget.marketplace.sp.dm.graphTestMail@@',
+    control_field : 'emailProvider',
+    control_value : 'graph',
+    control_use_regex : 'false',
+    ajax_url : '[CONTEXT_PATH]/web/json/plugin/org.joget.marketplace.SpSamlDirectoryManager/service?action=testGraphMail',
+    fields : ['from', 'graphTenantId', 'graphClientId', 'graphClientSecret', 'graphSendMailUrl', 'graphTokenUrl', 'graphScope'],
+    addition_fields : [
+        {
+            name : 'toSpecific',
+            label : '@@app.emailtool.toEmail@@',
+            type : 'textfield',
+            required : 'True'
+        }
+    ]
+}

@@ -19,18 +19,22 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import org.joget.apps.app.service.AppPluginUtil;
 import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.workflow.security.WorkflowUserDetails;
 import org.joget.commons.util.LogUtil;
+import org.joget.commons.util.SetupManager;
 import org.joget.directory.dao.RoleDao;
 import org.joget.directory.dao.UserDao;
 import org.joget.directory.ext.DirectoryManagerAuthenticatorImpl;
@@ -42,12 +46,16 @@ import org.joget.directory.model.service.DirectoryManagerProxyImpl;
 import org.joget.directory.model.service.UserSecurityFactory;
 import org.joget.marketplace.spsaml.Certificate;
 import org.joget.marketplace.spsaml.DirectoryManagerWrapper;
+import org.joget.marketplace.spsaml.GraphMailSender;
 import org.joget.plugin.base.PluginManager;
 import org.joget.plugin.directory.SecureDirectoryManager;
 import org.joget.plugin.directory.SecureDirectoryManagerImpl;
+import org.joget.plugin.property.service.PropertyUtil;
 import org.joget.workflow.model.dao.WorkflowHelper;
 import org.joget.workflow.model.service.WorkflowUserManager;
 import org.joget.workflow.util.WorkflowUtil;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -73,7 +81,7 @@ public class SpSamlDirectoryManager extends SecureDirectoryManager {
 
     @Override
     public String getVersion() {
-        return "8.0.6";
+        return "8.0.7";
     }
 
     @Override
@@ -103,11 +111,121 @@ public class SpSamlDirectoryManager extends SecureDirectoryManager {
         String action = request.getParameter("action");
         if ("dmOptions".equals(action)) {
             super.webService(request, response);
+        } else if ("testGraphMail".equals(action)) {
+            testGraphMail(request, response);
+        } else if ("validateNotification".equals(action)) {
+            validateNotification(request, response);
         } else {
             doLogin(request, response);
         } //else {
         //response.sendError(HttpServletResponse.SC_NO_CONTENT);
         //}
+    }
+
+    /**
+     * Add the Microsoft Graph fields and test button to the notification page, and point its
+     * validator at this plugin so SMTP fields are not required when Graph is selected
+     */
+    String addGraphEmailSettings(String usJson) {
+        String fields = AppUtil.readPluginResource(getClass().getName(), "/properties/app/graphEmailFields.json", null, true, "messages/SpSamlDirectoryManager");
+        String button = AppUtil.readPluginResource(getClass().getName(), "/properties/app/graphEmailButton.json", null, true, "messages/SpSamlDirectoryManager");
+        String result = usJson.replaceFirst("(\\{\\s*name\\s*:\\s*'from')", Matcher.quoteReplacement(fields.trim() + ",") + "$1");
+        result = result.replaceFirst("(buttons\\s*:\\s*\\[)(\\s*\\{\\s*name\\s*:\\s*'testmail')", "$1" + Matcher.quoteReplacement(button.trim() + ",") + "$2");
+        // Hide the SMTP fields and SMTP test button when Microsoft Graph is selected.
+        String smtpOnly = Matcher.quoteReplacement(" control_field : 'emailProvider', control_value : '^(?!graph$).*$', control_use_regex : 'true',");
+        for (String smtpField : new String[]{"host", "port", "security", "username", "password", "testmail"}) {
+            result = result.replaceFirst("(\\{\\s*name\\s*:\\s*'" + smtpField + "'\\s*,)", "$1" + smtpOnly);
+        }
+        result = result.replace("org.joget.apps.app.lib.EmailTool/service?action=validate",
+                "org.joget.marketplace.SpSamlDirectoryManager/service?action=validateNotification");
+        if (result.equals(usJson) || !result.contains("'emailProvider'")) {
+            LogUtil.warn(getClassName(), "Unable to add Microsoft Graph settings to the notification settings page");
+        }
+        return result;
+    }
+
+    /**
+     * Validate the notification page; SMTP settings are only required when Microsoft Graph is not selected
+     */
+    void validateNotification(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        response.setContentType("application/json;charset=UTF-8");
+        JSONObject result = new JSONObject();
+        boolean valid;
+        JSONArray messages = new JSONArray();
+        if (ExtUserSecurityImpl.EMAIL_PROVIDER_GRAPH.equals(request.getParameter("emailProvider"))) {
+            GraphMailSender sender = ExtUserSecurityImpl.createGraphMailSender(requestValues(request));
+            valid = !isEmpty(request.getParameter("from")) || !sender.usesFromPlaceholder();
+            if (!valid) {
+                messages.put(AppPluginUtil.getMessage("org.joget.marketplace.sp.dm.graphFromRequired", getClassName(), "messages/SpSamlDirectoryManager"));
+            }
+        } else {
+            // Same rule as EmailTool's validate action: page values, or the General Settings SMTP values.
+            SetupManager setupManager = (SetupManager) AppUtil.getApplicationContext().getBean("setupManager");
+            valid = (!isEmpty(request.getParameter("host")) && !isEmpty(request.getParameter("port")) && !isEmpty(request.getParameter("from")))
+                    || (!isEmpty(setupManager.getSettingValue("smtpHost")) && !isEmpty(setupManager.getSettingValue("smtpPort")) && !isEmpty(setupManager.getSettingValue("smtpEmail")));
+        }
+        if (valid) {
+            result.put("status", "success");
+        } else {
+            result.put("status", "fail");
+            result.put("message", messages);
+        }
+        result.write(response.getWriter());
+    }
+
+    private static boolean isEmpty(String value) {
+        return value == null || value.trim().isEmpty();
+    }
+
+    private Map<String, String> requestValues(HttpServletRequest request) {
+        Map<String, String> values = new HashMap<String, String>();
+        for (String name : new String[]{"graphTenantId", "graphClientId", "graphClientSecret", "graphTokenUrl", "graphScope", "graphSendMailUrl"}) {
+            String value = request.getParameter(name);
+            values.put(name, value == null ? "" : value);
+        }
+        return values;
+    }
+
+    /**
+     * Send a test email with the Microsoft Graph settings currently entered in the property editor
+     */
+    void testGraphMail(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        if (!WorkflowUtil.isCurrentUserInRole(WorkflowUserManager.ROLE_ADMIN)) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
+        response.setContentType("application/json;charset=UTF-8");
+        JSONObject result = new JSONObject();
+        try {
+            Map<String, String> properties = new HashMap<String, String>();
+            for (String name : new String[]{"from", "graphTenantId", "graphClientId", "graphClientSecret", "graphTokenUrl", "graphScope", "graphSendMailUrl"}) {
+                String value = request.getParameter(name);
+                properties.put(name, value == null ? "" : value);
+            }
+            // Fall back to saved values for a masked secret, or a From address on another page that the editor did not send.
+            DirectoryManagerProxyImpl dm = (DirectoryManagerProxyImpl) AppUtil.getApplicationContext().getBean("directoryManager");
+            DirectoryManager dmImpl = dm.getDirectoryManagerImpl();
+            SecureDirectoryManagerImpl saved = dmImpl instanceof SecureDirectoryManagerImpl ? (SecureDirectoryManagerImpl) dmImpl : null;
+            if (properties.get("graphClientSecret").startsWith(PropertyUtil.PASSWORD_PROTECTED_VALUE)) {
+                properties.put("graphClientSecret", saved != null ? saved.getPropertyString("graphClientSecret") : "");
+            }
+            if (properties.get("from").isEmpty() && saved != null) {
+                properties.put("from", saved.getPropertyString("from"));
+            }
+            String to = request.getParameter("toSpecific");
+            GraphMailSender sender = ExtUserSecurityImpl.createGraphMailSender(properties);
+            sender.send(properties.get("from"), GraphMailSender.splitAddresses(to), null,
+                    "Test email from SAML Service Provider Directory Manager",
+                    "This is a test email sent via Microsoft Graph.", false);
+            LogUtil.info(getClassName(), "Test email sent via Microsoft Graph from=" + properties.get("from") + ", to=" + to);
+            result.put("status", true);
+            result.put("message", "Test email sent via Microsoft Graph to " + to);
+        } catch (Exception e) {
+            LogUtil.error(getClassName(), e, "Microsoft Graph test email failed");
+            result.put("status", "fail");
+            result.put("message", e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage());
+        }
+        result.write(response.getWriter());
     }
 
     void doLogin(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -361,7 +479,7 @@ public class SpSamlDirectoryManager extends SecureDirectoryManager {
     @Override
     public String getPropertyOptions() {
         UserSecurityFactory f = (UserSecurityFactory) new SecureDirectoryManagerImpl(null);
-        String usJson = f.getUserSecurity().getPropertyOptions();
+        String usJson = addGraphEmailSettings(f.getUserSecurity().getPropertyOptions());
         usJson = usJson.replaceAll("\\n", "\\\\n");
 
         String addOnJson = "";

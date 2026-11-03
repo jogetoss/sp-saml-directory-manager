@@ -1,16 +1,24 @@
 package org.joget.marketplace;
 
+import java.util.List;
 import java.util.Map;
 import org.joget.apps.app.service.AppUtil;
+import org.joget.commons.util.LogUtil;
+import org.joget.commons.util.PluginThread;
 import org.joget.commons.util.ResourceBundleUtil;
+import org.joget.commons.util.SecurityUtil;
+import org.joget.directory.model.User;
 import org.joget.directory.model.service.DirectoryManagerProxyImpl;
 import org.joget.directory.model.service.UserSecurity;
+import org.joget.marketplace.spsaml.GraphMailSender;
 import org.joget.plugin.base.HiddenPlugin;
 import org.joget.plugin.base.PluginManager;
 import org.joget.plugin.directory.SecureDirectoryManagerImpl;
 import org.joget.plugin.directory.UserSecurityImpl;
 
 public class ExtUserSecurityImpl extends UserSecurityImpl implements HiddenPlugin {
+
+    public static final String EMAIL_PROVIDER_GRAPH = "graph";
 
     public ExtUserSecurityImpl() {
         super();
@@ -51,11 +59,11 @@ public class ExtUserSecurityImpl extends UserSecurityImpl implements HiddenPlugi
             content += "<a rel=\"popup\" style=\"cursor:pointer;text-decoration:underline;\" onclick=\"forgotPassword();return false;\">"+ResourceBundleUtil.getMessage("app.edm.label.forgotPassword")+"</a>\n";
 
             String contextPath = AppUtil.getRequestContextPath();
-            content += "<script>function forgotPassword(){new PopupDialog('" + contextPath + "/web/json/plugin/"+UserSecurityImpl.class.getName()+"/service?a=fp', ' ').init();}</script>";
+            content += "<script>function forgotPassword(){new PopupDialog('" + contextPath + "/web/json/plugin/"+getClassName()+"/service?a=fp', ' ').init();}</script>";
 
             String token = getForgotPasswordToken();
             if (token != null) {
-                content += "<script>$(document).ready(function(){new PopupDialog('" + contextPath + "/web/json/plugin/"+UserSecurityImpl.class.getName()+"/service?a=fpcp&t="+token+"', ' ').init();});</script>";
+                content += "<script>$(document).ready(function(){new PopupDialog('" + contextPath + "/web/json/plugin/"+getClassName()+"/service?a=fpcp&t="+token+"', ' ').init();});</script>";
             }
         }
 
@@ -97,5 +105,80 @@ public class ExtUserSecurityImpl extends UserSecurityImpl implements HiddenPlugi
         PluginManager pluginManager = (PluginManager) AppUtil.getApplicationContext().getBean("pluginManager");
         String content = pluginManager.getPluginFreeMarkerTemplate(model, UserSecurityImpl.class.getName(), "/templates/" + template + ".ftl", null);
         return content;
+    }
+
+    /**
+     * Treat Microsoft Graph as configured mail so forgot password, password reset
+     * and user creation emails are not skipped when no SMTP host is set
+     */
+    @Override
+    public boolean isSmtpNotConfigured() {
+        if (isGraphEnabled()) {
+            GraphMailSender sender = createGraphMailSender(getProperties());
+            return !sender.isConfigured() || (getPropertyString("from").isEmpty() && sender.usesFromPlaceholder());
+        }
+        return super.isSmtpNotConfigured();
+    }
+
+    /**
+     * Send notification emails through Microsoft Graph instead of SMTP when enabled
+     */
+    @Override
+    protected void sendEmail(User user, String subject, String message, Map<String, String> data) {
+        if (!isGraphEnabled()) {
+            super.sendEmail(user, subject, message, data);
+            return;
+        }
+        if (isSmtpNotConfigured()) {
+            LogUtil.warn(getClass().getName(), "Send email to user " + user.getUsername() + " failed, Microsoft Graph not configured");
+            return;
+        }
+        try {
+            String emailSubject = populateEmailData(subject, user, data);
+            if (emailSubject != null) {
+                emailSubject = emailSubject.replace("\n", "").replace("\r", "");
+            }
+            final String finalSubject = emailSubject;
+            final String body = AppUtil.processHashVariable(populateEmailData(message, user, data), null, null, null);
+            final String from = getPropertyString("from");
+            final String username = user.getUsername();
+            final List<String> to = GraphMailSender.splitAddresses(user.getEmail());
+            final List<String> cc = GraphMailSender.splitAddresses(getPropertyString("cc"));
+            final boolean html = "true".equalsIgnoreCase(getPropertyString("isHtml"));
+            final GraphMailSender sender = createGraphMailSender(getProperties());
+
+            // Send in the background like the SMTP EmailTool; a lambda avoids a lazily loaded class in the shared org.joget.marketplace package.
+            Thread thread = new PluginThread(() -> {
+                try {
+                    sender.send(from, to, cc, finalSubject, body, html);
+                    LogUtil.info(ExtUserSecurityImpl.class.getName(), "Email sent via Microsoft Graph to user " + username + ", subject=" + finalSubject);
+                } catch (Exception e) {
+                    LogUtil.error(ExtUserSecurityImpl.class.getName(), e, "Send email via Microsoft Graph to user " + username + " failed");
+                }
+            });
+            thread.setDaemon(true);
+            thread.start();
+        } catch (Exception e) {
+            LogUtil.error(getClass().getName(), e, "Send email via Microsoft Graph to user " + user.getUsername() + " failed");
+        }
+    }
+
+    protected boolean isGraphEnabled() {
+        return EMAIL_PROVIDER_GRAPH.equals(getPropertyString("emailProvider"));
+    }
+
+    public static GraphMailSender createGraphMailSender(Map properties) {
+        return new GraphMailSender(
+                value(properties, "graphTenantId"),
+                value(properties, "graphClientId"),
+                SecurityUtil.decrypt(value(properties, "graphClientSecret")),
+                value(properties, "graphTokenUrl"),
+                value(properties, "graphScope"),
+                value(properties, "graphSendMailUrl"));
+    }
+
+    private static String value(Map properties, String key) {
+        Object value = properties == null ? null : properties.get(key);
+        return value == null ? "" : value.toString();
     }
 }

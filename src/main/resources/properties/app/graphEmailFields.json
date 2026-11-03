@@ -1,0 +1,74 @@
+    {
+        name : 'emailProvider',
+        label : '@@org.joget.marketplace.sp.dm.emailProvider@@',
+        description : '@@org.joget.marketplace.sp.dm.emailProvider.desc@@',
+        type : 'selectbox',
+        value : '',
+        options : [{
+            value : '',
+            label : '@@org.joget.marketplace.sp.dm.emailProvider.smtp@@'
+        },
+        {
+            value : 'graph',
+            label : '@@org.joget.marketplace.sp.dm.emailProvider.graph@@'
+        }]
+    },
+    {
+        name : 'graphTenantId',
+        label : '@@org.joget.marketplace.sp.dm.graphTenantId@@',
+        type : 'textfield',
+        required : 'true',
+        control_field : 'emailProvider',
+        control_value : 'graph',
+        control_use_regex : 'false'
+    },
+    {
+        name : 'graphClientId',
+        label : '@@org.joget.marketplace.sp.dm.graphClientId@@',
+        type : 'textfield',
+        required : 'true',
+        control_field : 'emailProvider',
+        control_value : 'graph',
+        control_use_regex : 'false'
+    },
+    {
+        name : 'graphClientSecret',
+        label : '@@org.joget.marketplace.sp.dm.graphClientSecret@@',
+        type : 'password',
+        required : 'true',
+        control_field : 'emailProvider',
+        control_value : 'graph',
+        control_use_regex : 'false'
+    },
+    {
+        name : 'graphSendMailUrl',
+        label : '@@org.joget.marketplace.sp.dm.graphSendMailUrl@@',
+        description : '@@org.joget.marketplace.sp.dm.graphSendMailUrl.desc@@',
+        type : 'textfield',
+        value : 'https://graph.microsoft.com/v1.0/users/{from}/sendMail',
+        required : 'true',
+        control_field : 'emailProvider',
+        control_value : 'graph',
+        control_use_regex : 'false'
+    },
+    {
+        name : 'graphTokenUrl',
+        label : '@@org.joget.marketplace.sp.dm.graphTokenUrl@@',
+        description : '@@org.joget.marketplace.sp.dm.graphTokenUrl.desc@@',
+        type : 'textfield',
+        value : 'https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token',
+        required : 'true',
+        control_field : 'emailProvider',
+        control_value : 'graph',
+        control_use_regex : 'false'
+    },
+    {
+        name : 'graphScope',
+        label : '@@org.joget.marketplace.sp.dm.graphScope@@',
+        type : 'textfield',
+        value : 'https://graph.microsoft.com/.default',
+        required : 'true',
+        control_field : 'emailProvider',
+        control_value : 'graph',
+        control_use_regex : 'false'
+    }
